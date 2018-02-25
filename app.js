@@ -43,8 +43,8 @@ class MyApp extends Homey.App {
                 let pDevice = args.device.name;
                 if (pDevice == null || pDevice == '') return new Error("No devices registered on this Pushover account!");
                 let pPriority = args.priority;
-                pushoverSend_device(tempUser, tempToken, pMessage, pDevice, pPriority, sound);
-				
+				return pushoverSend_device(tempUser, tempToken, pMessage, pDevice, pPriority, sound);
+				//return Promise.resolve();				
 		    })
 		    //.getArgument('to')
 	        //.registerAutocompleteListener(( query, args ) => {
@@ -64,8 +64,8 @@ class MyApp extends Homey.App {
                     let sound = args.sound;
                     if (typeof pMessage == 'undefined' || pMessage == null || pMessage == '') return new Error("Message can not be empty");
                     let pPriority = args.priority;
-                    pushoverSend(tempUser, tempToken, pMessage, pPriority, sound);
-                    
+                    return pushoverSend(tempUser, tempToken, pMessage, pPriority, sound);
+                    //return Promise.resolve();
                 })
                 //.getArgument('to')
                 //.registerAutocompleteListener(( query, args ) => {
@@ -87,17 +87,15 @@ class MyApp extends Homey.App {
                 //let sound = args.sound;
                 //let image = args.droptoken;
                 //console.log(typeof image)
-                console.log(args);
+                //console.log(args);
                 let image = args.droptoken;
 				image.getBuffer()
 				.then( buf => {
                     //console.log(buf);
-					pushoverSend(tempUser, tempToken, pMessage, pPriority, null, buf);
-					Promise.resolve();
+					return pushoverSend(tempUser, tempToken, pMessage, pPriority, null, buf);
                 })
 				.catch (function(err){
 					console.log(err)
-					Promise.reject(err);
 				})
 
 			})
@@ -211,8 +209,10 @@ function pushoverSend_device(pUser, pToken, pMessage, pDevice, pPriority, sound,
 
 		p.send(msg, function (err, result) {
 			if (err) {
-				throw err;
+				return Promise.reject(err);
+				//throw err;
 			} else {
+				return Promise.resolve(result);
 				if (ledringPreference == true) {
 					LedAnimate("green", 3000);
 				}
@@ -239,7 +239,12 @@ function createInsightlog() {
 			en: 'notifications'
 		},
 		decimals: 0
-	});
+	}).then(function (err){
+	console.log("Log Created")
+	}).catch(function (err)
+{
+	console.log("Log Not created. " + err)
+});
 }
 
 function buildPushoverArray() {
